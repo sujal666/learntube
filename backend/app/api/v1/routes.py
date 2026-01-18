@@ -1,10 +1,13 @@
 from fastapi import APIRouter, Depends
 from supabase import Client
 
+from app.api.v1.onboarding import router as onboarding_router
 from app.core.config import get_settings
 from app.services.supabase_client import get_supabase_client
 
 router = APIRouter(prefix="/v1")
+
+router.include_router(onboarding_router)
 
 
 @router.get("/health", tags=["health"])

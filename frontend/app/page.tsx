@@ -69,6 +69,14 @@ export default function Home() {
               Register
             </Link>
             {session && (
+              <Link
+                href="/onboarding"
+                className="rounded-lg border border-emerald-400/60 px-4 py-2 text-sm font-semibold text-emerald-100 hover:border-emerald-300 hover:text-white"
+              >
+                Continue onboarding
+              </Link>
+            )}
+            {session && (
               <button
                 type="button"
                 onClick={handleLogout}

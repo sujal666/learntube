@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useSupabase } from '../providers';
 
 export default function RegisterPage() {
@@ -10,6 +11,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +22,8 @@ export default function RegisterPage() {
     if (signUpError) {
       setError(signUpError.message);
     } else {
-      setMessage('Registered. Check email for confirmation if enabled, then return to Home.');
+      setMessage('Registered. Redirecting to onboarding...');
+      router.push('/onboarding');
     }
   };
 
