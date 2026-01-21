@@ -36,3 +36,35 @@ celery -A app.worker.celery_app.celery_app worker --loglevel=info
 - Add new routers under `app/api/v1/` (or bump the version) and include them in `routes.py`.
 - Keep shared DTOs/schemas co-located in `app/schemas/` as endpoints are added.
 - Wire observability (Langfuse/LangSmith) once GPT calls are introduced.
+
+## YouTube ingestion (data first, no AI yet)
+
+1) Create the raw videos table in Supabase (SQL editor):
+```
+-- backend/sql/videos_raw.sql
+create table if not exists public.videos_raw (
+  video_id text primary key,
+  title text not null,
+  description text,
+  channel_title text,
+  published_at timestamptz,
+  duration_seconds integer,
+  view_count bigint,
+  like_count bigint,
+  topics_source text[] not null default '{}',
+  fetched_at timestamptz not null default now(),
+  raw jsonb
+);
+```
+2) Set `YOUTUBE_API_KEY` in `backend/.env` (Settings → API → select your YouTube key).
+3) Start the API and call:
+```
+POST /api/v1/ingest/youtube
+{
+  "topics": ["machine learning", "react tutorial"],
+  "max_results_per_topic": 5,
+  "min_view_count": 1000,
+  "max_age_days": 365
+}
+```
+This fetches metadata via YouTube Data API and upserts into `videos_raw` (no embeddings yet).

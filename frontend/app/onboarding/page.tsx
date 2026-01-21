@@ -73,6 +73,7 @@ export default function OnboardingPage() {
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [ingestStatus, setIngestStatus] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth
@@ -103,6 +104,7 @@ export default function OnboardingPage() {
     e.preventDefault();
     setError(null);
     setStatus(null);
+    setIngestStatus(null);
 
     if (!userId) {
       setError('You need to be logged in to complete onboarding.');
@@ -143,8 +145,34 @@ export default function OnboardingPage() {
         throw new Error(body?.message || 'Failed to save onboarding data.');
       }
 
-      setStatus('Onboarding saved. Redirecting to dashboard...');
-      setTimeout(() => router.push('/'), 1200);
+      setStatus('Onboarding saved.');
+
+      const topics = selectedGoals.length ? selectedGoals : mainObjective ? [mainObjective] : [];
+      if (topics.length) {
+        const ingestRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL ?? ''}/api/v1/ingest/youtube`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+          },
+          body: JSON.stringify({
+            topics,
+            max_results_per_topic: 3,
+            min_view_count: 1000,
+            max_age_days: 365,
+          }),
+        });
+        if (ingestRes.ok) {
+          const body = await ingestRes.json().catch(() => null);
+          setIngestStatus(`Fetched ${body?.inserted ?? 0} videos for ${topics.join(', ')}.`);
+        } else {
+          setIngestStatus('Ingestion failed, you can retry from dashboard.');
+        }
+      } else {
+        setIngestStatus('No topics selected to ingest videos.');
+      }
+
+      setTimeout(() => router.push('/dashboard'), 900);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unexpected error';
       setError(message);
@@ -220,6 +248,7 @@ export default function OnboardingPage() {
               {submitting ? 'Saving…' : 'Save and continue'}
             </button>
             {status && <p className="text-sm text-emerald-200">{status}</p>}
+            {ingestStatus && <p className="text-sm text-slate-200">{ingestStatus}</p>}
             {error && <p className="text-sm text-red-300">{error}</p>}
           </div>
         </form>
