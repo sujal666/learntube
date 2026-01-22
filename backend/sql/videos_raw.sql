@@ -8,6 +8,11 @@ create table if not exists public.videos_raw (
   duration_seconds integer,
   view_count bigint,
   like_count bigint,
+  difficulty text,
+  difficulty_confidence numeric,
+  sentiment_score numeric,
+  comment_count_analyzed integer,
+  topic_tags text[],
   topics_source text[] not null default '{}',
   fetched_at timestamptz not null default now(),
   raw jsonb

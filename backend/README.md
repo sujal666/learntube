@@ -51,6 +51,11 @@ create table if not exists public.videos_raw (
   duration_seconds integer,
   view_count bigint,
   like_count bigint,
+  difficulty text,
+  difficulty_confidence numeric,
+  sentiment_score numeric,
+  comment_count_analyzed integer,
+  topic_tags text[],
   topics_source text[] not null default '{}',
   fetched_at timestamptz not null default now(),
   raw jsonb
@@ -68,3 +73,19 @@ POST /api/v1/ingest/youtube
 }
 ```
 This fetches metadata via YouTube Data API and upserts into `videos_raw` (no embeddings yet).
+
+## NLP enrichment (difficulty, sentiment, topics)
+
+1) Ensure `backend.sql/videos_raw.sql` is applied so the table stores difficulty + sentiment fields.
+2) Set `YOUTUBE_API_KEY` in `backend/.env` (used for metadata and comments).
+3) Call the enrichment endpoint:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/enrich/videos/{video_id}
+```
+
+4) The route runs Hugging Face zero-shot classifiers + sentiment pipelines, fetches top comments, and writes:
+   - `difficulty` / `difficulty_confidence`
+   - `sentiment_score` / `comment_count_analyzed`
+   - `topic_tags`
+5) Use these columns to filter recommendations before generating embeddings.

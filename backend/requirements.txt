@@ -9,3 +9,4 @@ transformers>=4.46.0
 sentence-transformers>=3.2.0
 openai>=1.52.0
 langfuse>=2.38.1
+torch>=2.1.0
