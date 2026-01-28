@@ -15,21 +15,25 @@ router = APIRouter(prefix="/enrich", tags=["enrichment"])
 
 @router.post("/videos/{video_id}", response_model=VideoEnrichmentResult)
 def enrich_video(video_id: str, client: Client = Depends(get_supabase_client)):
-    video_resp = (
-        client.table("videos_raw")
-        .select("*")
-        .eq("video_id", video_id)
-        .maybe_single()
-        .execute()
-    )
+    video_id = video_id.strip()
+    try:
+        video_resp = (
+            client.table("videos_raw")
+            .select("*")
+            .eq("video_id", video_id)
+            .maybe_single()
+            .execute()
+        )
+        video = video_resp.data if video_resp else None
+    except Exception:
+        video = None
 
-    if not video_resp.data:
+    if not video:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"No video found for id {video_id}",
         )
 
-    video = video_resp.data
     text = " ".join(
         filter(None, [video.get("title"), video.get("description")])
     ).strip()
