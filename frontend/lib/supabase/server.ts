@@ -17,8 +17,8 @@ const resolveEnv = () => {
  * Server-side Supabase client with cookie support for authenticated flows.
  * Uses service role key when available to enable backend operations.
  */
-export const createSupabaseServerClient = (): SupabaseClient => {
-  const cookieStore = cookies();
+export const createSupabaseServerClient = async (): Promise<SupabaseClient> => {
+  const cookieStore = await cookies();
   const { url, key } = resolveEnv();
 
   return createServerClient(url, key, {

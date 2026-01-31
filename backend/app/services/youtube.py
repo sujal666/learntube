@@ -38,6 +38,7 @@ def fetch_youtube_metadata(
     min_view_count: int = 0,
     max_age_days: Optional[int] = 365,
     exclude_keywords: Optional[List[str]] = None,
+    order: str = "relevance",
 ) -> List[Dict]:
     settings = get_settings()
     api_key = settings.youtube_api_key
@@ -60,7 +61,7 @@ def fetch_youtube_metadata(
                 "part": "snippet",
                 "type": "video",
                 "maxResults": max_results_per_topic,
-                "order": "relevance",
+                "order": order,
                 "safeSearch": "none",
             }
 
